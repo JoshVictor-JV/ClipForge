@@ -2,7 +2,8 @@ FROM node:20-slim
 
 RUN apt-get update && apt-get install -y ffmpeg python3 python3-pip curl --no-install-recommends && \
     pip install yt-dlp --break-system-packages && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    ln -s /usr/bin/ffmpeg /usr/local/bin/ffmpeg
 
 WORKDIR /app
 COPY package*.json ./
