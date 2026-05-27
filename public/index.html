@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClipForge — YouTube Clip Extractor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-logo" width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <polygon points="6,3 26,16 6,29" fill="var(--accent)"/>
+          <line x1="2" y1="8" x2="2" y2="24" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <span class="brand-name">ClipForge</span>
+          <span class="brand-tagline">YouTube Clip Extractor</span>
+        </div>
+      </div>
+      <div class="header-controls">
+        <div id="depStatus" class="dep-indicator" title="Checking…">
+          <span class="dep-dot"></span>
+          <span class="dep-label">Checking…</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">
+          <svg class="icon-dark" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="8" y1="1" x2="8" y2="3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="8" y1="13" x2="8" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="1" y1="8" x2="3" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="13" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2.93" y1="2.93" x2="4.34" y2="4.34" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11.66" y1="11.66" x2="13.07" y2="13.07" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="2.93" y1="13.07" x2="4.34" y2="11.66" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11.66" y1="4.34" x2="13.07" y2="2.93" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <svg class="icon-light" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M13.5 8.5A5.5 5.5 0 1 1 7.5 3a4 4 0 0 0 6 5.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dep banner -->
+  <div id="depBanner" class="dep-banner hidden">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="var(--warn)" stroke-width="1.3"/><line x1="7.5" y1="4.5" x2="7.5" y2="8.5" stroke="var(--warn)" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="11" r="0.8" fill="var(--warn)"/></svg>
+    <span id="depBannerText"></span>
+  </div>
+
+  <main class="main">
+
+    <!-- Left column: controls -->
+    <section class="panel panel-left">
+
+      <!-- URL input -->
+      <div class="card url-card">
+        <label class="field-label" for="urlInput">YouTube URL</label>
+        <div class="url-row">
+          <input type="url" id="urlInput" class="url-input" placeholder="https://www.youtube.com/watch?v=…" autocomplete="off" spellcheck="false"/>
+          <button class="icon-btn" id="pasteBtn" title="Paste">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="4" width="8" height="9" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="card preview-card" id="previewCard">
+        <div class="preview-placeholder" id="previewPlaceholder">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="4" y="8" width="32" height="24" rx="3" stroke="currentColor" stroke-width="1.5" opacity="0.3"/><polygon points="15,14 28,20 15,26" fill="currentColor" opacity="0.3"/></svg>
+          <span>Paste a YouTube link to preview</span>
+        </div>
+        <div id="playerWrap" class="player-wrap hidden">
+          <div id="ytPlayer"></div>
+          <!-- In/Out markers overlay on progress bar -->
+          <div class="player-controls">
+            <div class="player-timeline">
+              <div class="timeline-bar" id="timelineBar">
+                <div class="timeline-filled" id="timelineFilled"></div>
+                <div class="timeline-range" id="timelineRange"></div>
+                <div class="timeline-thumb" id="timelineThumb"></div>
+                <div class="marker-in" id="markerIn" title="In point"></div>
+                <div class="marker-out" id="markerOut" title="Out point"></div>
+              </div>
+              <div class="time-display">
+                <span id="currentTimeDisplay">0:00</span>
+                <span class="time-sep">/</span>
+                <span id="durationDisplay">0:00</span>
+              </div>
+            </div>
+            <div class="player-btn-row">
+              <button class="ctrl-btn" id="playPauseBtn" title="Play/Pause">
+                <svg id="playIcon" width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="currentColor"/></svg>
+                <svg id="pauseIcon" width="16" height="16" viewBox="0 0 16 16" fill="none" class="hidden"><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor"/></svg>
+              </button>
+              <button class="ctrl-btn mark-btn" id="setInBtn" title="Set In point here">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="2" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polygon points="2,7 10,3 10,11" fill="currentColor"/></svg>
+                Set In
+              </button>
+              <button class="ctrl-btn mark-btn" id="setOutBtn" title="Set Out point here">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="12" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polygon points="12,7 4,3 4,11" fill="currentColor"/></svg>
+                Set Out
+              </button>
+              <button class="ctrl-btn preview-clip-btn" id="previewClipBtn" title="Play selected clip only">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="2,2 12,7 2,12" fill="currentColor"/><line x1="10" y1="2" x2="10" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Preview Clip
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video info -->
+      <div class="card video-meta hidden" id="videoMeta">
+        <div class="meta-thumb-wrap">
+          <img id="metaThumb" src="" alt="" class="meta-thumb"/>
+        </div>
+        <div class="meta-details">
+          <div class="meta-title" id="metaTitle"></div>
+          <div class="meta-author" id="metaAuthor"></div>
+          <div class="meta-duration" id="metaDuration"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right column: clip settings -->
+    <section class="panel panel-right">
+
+      <!-- Clip timeline -->
+      <div class="card">
+        <div class="card-title">Clip Range</div>
+
+        <div class="range-slider-wrap">
+          <div class="range-labels">
+            <span>In: <strong id="inLabel">00:00:00</strong></span>
+            <span>Out: <strong id="outLabel">00:00:00</strong></span>
+            <span class="duration-tag" id="clipDurationTag">0s</span>
+          </div>
+          <div class="dual-slider-track" id="dualSliderTrack">
+            <div class="dual-slider-fill" id="dualSliderFill"></div>
+            <input type="range" class="range-input range-in" id="rangeIn" min="0" max="1000" value="0" step="1"/>
+            <input type="range" class="range-input range-out" id="rangeOut" min="0" max="1000" value="1000" step="1"/>
+          </div>
+        </div>
+
+        <div class="time-fields">
+          <div class="time-field">
+            <label for="startTime">In Time</label>
+            <input type="text" id="startTime" class="time-input mono" placeholder="00:00:00" maxlength="8"/>
+          </div>
+          <div class="time-arrow">→</div>
+          <div class="time-field">
+            <label for="endTime">Out Time</label>
+            <input type="text" id="endTime" class="time-input mono" placeholder="00:00:00" maxlength="8"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clips queue -->
+      <div class="card">
+        <div class="card-title-row">
+          <div class="card-title">Clip Queue</div>
+          <button class="add-clip-btn" id="addClipBtn" title="Add current range as a clip">+ Add Clip</button>
+        </div>
+        <div class="clip-queue" id="clipQueue">
+          <div class="queue-empty" id="queueEmpty">No clips added yet. Set in/out points and click Add Clip.</div>
+        </div>
+      </div>
+
+      <!-- Format -->
+      <div class="card">
+        <div class="card-title">Output Format</div>
+        <div class="format-row">
+          <button class="fmt-btn active" data-fmt="mp4" id="fmtMp4">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 6l4 2-4 2V6z" fill="currentColor"/></svg>
+            MP4 <span class="fmt-sub">Video</span>
+          </button>
+          <button class="fmt-btn" data-fmt="mp3" id="fmtMp3">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 12V5l7-1.5V10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            MP3 <span class="fmt-sub">Audio</span>
+          </button>
+        </div>
+
+        <div id="mp4Options">
+          <div class="sub-section">
+            <div class="sub-label">Quality</div>
+            <div class="pill-group" id="qualityGroup">
+              <button class="pill active" data-quality="best">Best</button>
+              <button class="pill" data-quality="1080">1080p</button>
+              <button class="pill" data-quality="720">720p</button>
+              <button class="pill" data-quality="480">480p</button>
+              <button class="pill" data-quality="360">360p</button>
+            </div>
+          </div>
+          <div class="sub-section">
+            <div class="sub-label">Aspect Ratio</div>
+            <div class="pill-group" id="aspectGroup">
+              <button class="pill active" data-aspect="original">Original</button>
+              <button class="pill" data-aspect="9:16">9:16 <small>Vertical</small></button>
+              <button class="pill" data-aspect="1:1">1:1 <small>Square</small></button>
+              <button class="pill" data-aspect="4:5">4:5 <small>Portrait</small></button>
+              <button class="pill" data-aspect="16:9">16:9 <small>Wide</small></button>
+            </div>
+          </div>
+          <div class="aspect-hint hidden" id="aspectHint">
+            <span id="aspectHintText"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Extract button -->
+      <button class="extract-btn" id="extractBtn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polygon points="5,2 15,9 5,16" fill="currentColor"/><line x1="1" y1="2" x2="1" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span id="btnText">Extract Clip</span>
+      </button>
+
+      <!-- Status panel -->
+      <div class="status-panel hidden" id="statusPanel">
+        <div class="status-header">
+          <div id="statusIcon" class="status-icon"></div>
+          <span id="statusMessage" class="status-message"></span>
+        </div>
+        <div class="progress-wrap hidden" id="progressWrap">
+          <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <span class="progress-label" id="progressLabel">0%</span>
+        </div>
+        <div class="stages" id="stageIndicators">
+          <div class="stage" id="stageFetch"><div class="stage-dot"></div><span>Fetching</span></div>
+          <div class="stage-line"></div>
+          <div class="stage" id="stageExtract"><div class="stage-dot"></div><span>Extracting</span></div>
+          <div class="stage-line"></div>
+          <div class="stage" id="stageDone"><div class="stage-dot"></div><span>Ready</span></div>
+        </div>
+        <div class="result-box hidden" id="resultBox">
+          <a class="download-btn" id="downloadLink" href="#" download>
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 2v8M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="2" y1="13" x2="13" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Download Clip
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="app.js"></script>
+</body>
+</html>
